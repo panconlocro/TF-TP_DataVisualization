@@ -63,3 +63,5 @@ Thumbs.db
 *.cache
 .pytest_cache/
 .coverage
+
+.venv/

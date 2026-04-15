@@ -1,0 +1,15 @@
+# Core data analysis
+pandas>=2.0
+numpy>=1.24
+
+# Visualization
+matplotlib>=3.7
+seaborn>=0.13
+plotly>=5.18
+
+# Notebooks
+jupyterlab>=4.0
+ipykernel>=6.0
+
+# Optional (useful for reading .xlsx if needed)
+openpyxl>=3.1
