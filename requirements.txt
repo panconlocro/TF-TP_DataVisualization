@@ -13,3 +13,5 @@ ipykernel>=6.0
 
 # Optional (useful for reading .xlsx if needed)
 openpyxl>=3.1
+
+gdown>=4.5
