@@ -5,8 +5,9 @@ import os
 # Descargar dataset desde Kaggle
 path = kagglehub.dataset_download("muhammadtalhaawan/world-export-and-import-dataset")
 
-# Crear carpeta destino
+# Crear carpetas del proyecto
 os.makedirs("data/raw", exist_ok=True)
+os.makedirs("data/processed", exist_ok=True)
 
 # Copiar CSV a data/raw/
 for file in os.listdir(path):
