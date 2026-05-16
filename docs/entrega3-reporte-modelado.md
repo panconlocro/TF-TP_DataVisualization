@@ -4,55 +4,52 @@
 
 **Curso:** Data Visualization (1ACC0211) - UPC  
 **Tema:** Dinámica del comercio mundial: exportaciones e importaciones por país, categoría de producto y región geográfica (1989-2023)  
-**Notebook asociado:** [`../notebooks/entrega3-preprocesamiento-modelado.ipynb`](../notebooks/entrega3-preprocesamiento-modelado.ipynb)
+**Notebook asociado:** [`../notebooks/entrega3-pipeline-final.ipynb`](../notebooks/entrega3-pipeline-final.ipynb)
 
 ---
 
-## 1. Preprocesamiento Real sobre el Dataset
+## 1. Justificación del Preprocesamiento para Llegar al Modelo
 
-Para asegurar que Tableau procese los datos con máximo rendimiento y sin errores de agregación, aplicamos un preprocesamiento orientado al **Modelado Dimensional (Metodología de Ralph Kimball)** sobre el *dataset* limpio de la Entrega 2. Los pasos fueron:
+Es imperativo aclarar que **las tareas de limpieza de datos (manejo de nulos, atípicos, tipado de columnas, filtrado de entidades vigentes) ya fueron resueltas exhaustivamente durante el Entregable 2** y documentadas en su respectivo perfilado. Repetir esos pasos sería redundante e incorrecto.
 
-1. **Filtrado de Entidades y Control de Calidad:** Se descartaron registros con `entity_status == 'Inactivo'` y se limpiaron valores nulos en las métricas core (`Export USD`).
-2. **Generación de Variables Derivadas:** Se creó la variable `Decade` (Década) agrupando la columna temporal para permitir segmentación transversal a largo plazo en Tableau.
-3. **Generación de Surrogate Keys (Claves Subrogadas):** En lugar de realizar uniones (Joins) usando el nombre del país (`Partner Name`) en formato `String`, se generaron claves enteras (`dim_country_sk`, `dim_time_sk`). Las comparaciones de enteros en memoria son órdenes de magnitud más rápidas.
-4. **Desagregación:** Se dividió la matriz unificada en dimensiones (geográfica y temporal) y una tabla central transaccional (Hechos).
+Por lo tanto, el preprocesamiento exigido para esta entrega es **estrictamente de carácter estructural/arquitectónico**, ya que su propósito es transformar la matriz original (generada en la Entrega 2) para que encaje en el modelo relacional analítico. Los pasos ejecutados y justificados fueron:
 
----
-
-## 2. Discusión de Opciones de Modelo de Datos
-
-Se plantearon tres arquitecturas analíticas para ser consumidas por Tableau. Cada una representa un *trade-off* entre rendimiento de consulta, integridad de datos y facilidad de uso.
-
-### Opción A: Tabla Plana (One Big Table - OBT)
-*   **Definición:** Todas las jerarquías, dimensiones y hechos se desnormalizan en una sola matriz gigantesca (similar al output de la Entrega 2).
-*   **Debilidad Crítica:** Falla en la integridad semántica. Genera un riesgo altísimo de **Fan-out trap** al duplicar métricas agregadas globales por cada país existente en un año determinado.
-
-### Opción B: Esquema Copo de Nieve (Snowflake Schema)
-*   **Definición:** Modelo altamente normalizado (Tercera Forma Normal - 3NF). 
-*   **Debilidad Crítica:** La sobre-normalización obliga a Tableau a resolver múltiples "saltos" (Joins en cadena) en tiempo de ejecución, lo que degrada la interactividad del Dashboard, violando el principio de fluidez visual.
-
-### Opción C: Esquema en Estrella (Star Schema)
-*   **Definición:** Una tabla de Hechos central transaccional rodeada de dimensiones desnormalizadas.
-*   **Fortaleza:** Es el estándar de la industria (Kimball). Las dimensiones "conformadas" permiten cortes analíticos limpios y ahorra los joins complejos en Tableau al conectarse mediante su capa lógica (*Relationships*).
+1. **Validación de Unicidad y Cardinalidad:** Se aplicó una validación sobre la clave primaria compuesta (`Partner Name` + `Year`). *Justificación:* Si existen duplicados en este nivel base, al conectar las tablas en Tableau el motor Hyper generaría un producto cartesiano (explosión de datos), arruinando los cálculos agregados.
+2. **Normalización (Resolución de Dependencias Transitivas):** Se aislaron las variables que no dependen directamente del flujo comercial. Por ejemplo, `Region` se separó a la dimensión de país, y `World Growth (%)` a la dimensión de tiempo. *Justificación:* Almacenar el crecimiento mundial en cada fila transaccional viola la 2da Forma Normal (2NF) y genera redundancia analítica masiva.
+3. **Generación de Claves Subrogadas (Surrogate Keys):** Reemplazamos los identificadores alfanuméricos (`Partner Name`) por identificadores numéricos incrementales o hashes (`dim_country_sk`). *Justificación:* Los *Joins* relacionales sobre enteros son computacionalmente mucho más rápidos para el servidor de Tableau que las evaluaciones cruzadas de cadenas de texto.
+4. **Construcción de la Tabla de Hechos:** Se eliminaron las descripciones textuales de la matriz principal, dejando solo identificadores y métricas aditivas (`Export USD`). *Justificación:* Centraliza el almacenamiento transaccional para operaciones aritméticas eficientes.
 
 ---
 
-## 3. Pruebas de Estrés y Evidencia Computacional (Benchmarking)
+## 2. Opciones de Arquitectura Comparadas
 
-Para cumplir estrictamente con el criterio de *"selección de modelo justificado con evidencia"*, el código en Python ejecuta métricas de evaluación estructurales midiendo los beneficios en KB y la precisión estadística:
+Se evaluaron dos modelos de datos competitivos para inyectar la información a Tableau:
 
-| Métrica Computacional (Evidencia Empírica) | Resultado en OBT (Tabla Plana) | Resultado en Estrella (Star Schema) | Conclusión Basada en Evidencia |
+*   **Opción A (Modelo Base): Tabla Plana (One Big Table - OBT)** 
+    *   *Descripción:* El archivo directo e intacto exportado del Entregable 2 (`dataset_limpio_entrega2_consolidado.csv`), donde todo está desnormalizado.
+*   **Opción B (Modelo Avanzado): Esquema en Estrella (Star Schema)**
+    *   *Descripción:* El output del preprocesamiento de este entregable. La información se separa lógicamente en Hechos y Dimensiones, que se vincularán usando *Relationships* nativas de Tableau.
+
+---
+
+## 3. Pruebas de Benchmarking y Criterios de Selección
+
+Se programó un script computacional que somete ambos modelos a evaluación utilizando métricas empíricas. Estas pruebas validan por qué la **Opción B (Esquema en Estrella)** es requerida:
+
+| Métrica Evaluada (Evidencia) | Resultado OBT (Tabla Plana) | Resultado Estrella (Star Schema) | Justificación de Decisión para el Modelo |
 | :--- | :--- | :--- | :--- |
-| **Consumo de Memoria RAM (Sparsity)** | Muy ineficiente (repite *strings*) | Eficiente (Surrogate Keys) | **La Estrella ahorra RAM drásticamente.** Eliminar la redundancia textual disminuye el peso, lo que asegura que Tableau cargue el Extracto más rápido. |
-| **Prueba de Fan-Out Trap (Fidelidad Semántica)** | Distorsiona el `World Growth (%)` | Mantiene el Promedio Real | **La OBT corrompe la agregación nativa.** Este es el hallazgo más crítico: si usamos la OBT original, el Dashboard arrojará promedios macroeconómicos falsos. |
+| **Consumo de Memoria RAM (Sparsity)** | Menor eficiencia | **Mayor compresión** | El modelo Estrella ahorra memoria al descartar los textos duplicados; esto es necesario para garantizar fluidez operativa en Tableau al filtrar décadas enteras. |
+| **Riesgo de Agregación (Fan-Out Trap)** | Dato Distorsionado / Falso | **Promedio Real Conservado** | **CRÍTICO:** La OBT suma o promedia múltiples veces el crecimiento macroeconómico global por cada país que existe. La Estrella resuelve el problema del Fan-Out, evitando métricas falsas sin forzar al usuario a programar complejos Level-of-Detail (LODs) en Tableau. |
+
+*(Nota: La tabla comparativa formal `tabla_comparativa_modelos.csv` ha sido generada automáticamente por el código y se encuentra en `/outputs/`).*
 
 ---
 
 ## 4. Definición del Modelo Seleccionado
 
-**Modelo Seleccionado:** **Esquema en Estrella (Star Schema) implementado en la Capa Lógica (Relationships) de Tableau.**
+**Modelo Seleccionado:** **Esquema en Estrella (Star Schema)**
 
-**Justificación basada en evidencia:**
-Como se demuestra matemáticamente en las pruebas del notebook, el Esquema en Estrella no es solo una "buena práctica teórica", sino una necesidad computacional y aritmética para el proyecto.
+**Justificación Final:** 
+Dado el objetivo analítico del proyecto (cruzar variables transaccionales Micro como Exportaciones Nacionales con variables contextuales Macro como Crecimiento Mundial), la evidencia de la prueba del **Fan-Out Trap** descartó irrevocablemente el Modelo Base (Tabla Plana). Mantener la OBT hubiese significado inyectar datos propensos a fallos estadísticos si el analista final no estaba vigilante. 
 
-Se rechaza definitivamente la Tabla Plana porque la prueba del **Fan-Out Trap** demuestra empíricamente que corrompe la precisión de las métricas macroeconómicas al duplicarlas. Para la "Dinámica del comercio mundial", donde compararemos constantemente tasas globales de crecimiento con sumatorias de volumen local, la integridad matemática que provee la Estrella (junto con su probada compresión de memoria) es la única arquitectura viable para desplegar un Dashboard profesional.
+El preprocesamiento estructural que ejecutamos garantizó que el modelo seleccionado asegure velocidad de cómputo (vía *Surrogate Keys*) y precisión semántica natural. Las tres tablas que lo componen han sido serializadas y están listas para su consumo en `/outputs/tableau_sources/`.
