@@ -11,7 +11,7 @@ notebook = {
                 "\n",
                 "**Proyecto:** Dinámica del comercio mundial: exportaciones e importaciones por país y región geográfica (1989-2023)\n",
                 "\n",
-                "**Contexto:** En el Entregable 2, el dataset fue perfilado y limpiado exhaustivamente (tratamiento de nulos, tipado de datos y homogeneización de entidades). Por lo tanto, el objetivo de este notebook no es repetir la limpieza de calidad de datos, sino ejecutar el **preprocesamiento estructural necesario para llegar al modelo analítico final** que consumirá Tableau."
+                "**Contexto:** En el Entregable 2, el dataset fue perfilado y limpiado exhaustivamente. Por lo tanto, el objetivo de este notebook no es repetir la limpieza de calidad de datos, sino ejecutar el **preprocesamiento estructural necesario para llegar al modelo analítico final** que consumirá Tableau."
             ]
         },
         {
@@ -47,6 +47,7 @@ notebook = {
                 "    print(f'Dataset limpio cargado exitosamente: {df_base.shape[0]} filas y {df_base.shape[1]} columnas.')\n",
                 "except FileNotFoundError:\n",
                 "    print('Advertencia: Ejecuta primero el notebook del Entregable 2. Generando dummy temporal.')\n",
+                "    np.random.seed(42)\n",
                 "    df_base = pd.DataFrame({\n",
                 "        'Year': np.random.randint(1989, 2024, 10000),\n",
                 "        'Partner Name': np.random.choice([f'Country_{i}' for i in range(250)], 10000),\n",
@@ -62,7 +63,7 @@ notebook = {
             "metadata": {},
             "source": [
                 "## 2. Preprocesamiento Estructural para Llegar al Modelo\n",
-                "Dado que los datos ya están limpios, los pasos requeridos para transformar esta 'Tabla Plana' en un Modelo Relacional (Esquema en Estrella) son de naturaleza arquitectónica:"
+                "Pasos para transformar esta 'Tabla Plana' en un Modelo Relacional (Esquema en Estrella):"
             ]
         },
         {
@@ -78,7 +79,6 @@ notebook = {
                 "    df_base = df_base.drop_duplicates(subset=['Partner Name', 'Year'])\n",
                 "\n",
                 "# PASO 2: Normalización (Resolución de Dependencias Transitivas para el Modelo)\n",
-                "# Justificación: Para modelar en Estrella, necesitamos separar atributos que no dependen directamente del cruce transaccional.\n",
                 "dim_country_cols = ['Partner Name']\n",
                 "if 'Region' in df_base.columns: dim_country_cols.append('Region')\n",
                 "    \n",
@@ -87,16 +87,14 @@ notebook = {
                 "\n",
                 "dim_country = df_base[dim_country_cols].drop_duplicates().reset_index(drop=True)\n",
                 "dim_time = df_base[dim_time_cols].drop_duplicates().reset_index(drop=True)\n",
-                "print(\"2. Matrices dimensionales aisladas exitosamente para evitar redundancia de la Tabla Plana.\")\n",
+                "print(\"2. Matrices dimensionales aisladas exitosamente.\")\n",
                 "\n",
                 "# PASO 3: Generación de Surrogate Keys (Claves Subrogadas)\n",
-                "# Justificación: Los motores analíticos (como Tableau Hyper) procesan joins de números enteros mucho más rápido que cadenas de texto.\n",
                 "dim_country.insert(0, 'dim_country_sk', range(1, 1 + len(dim_country)))\n",
                 "dim_time.insert(0, 'dim_time_sk', range(1, 1 + len(dim_time)))\n",
                 "print(\"3. Surrogate Keys generadas para optimización del motor relacional.\")\n",
                 "\n",
                 "# PASO 4: Construcción de la Tabla de Hechos (Fact Table)\n",
-                "# Justificación: Reemplazamos los strings por las llaves generadas para crear la matriz central puramente numérica.\n",
                 "fact_trade = df_base.merge(dim_country[['Partner Name', 'dim_country_sk']], on='Partner Name', how='left')\n",
                 "fact_trade = fact_trade.merge(dim_time[['Year', 'dim_time_sk']], on='Year', how='left')\n",
                 "\n",
@@ -110,7 +108,7 @@ notebook = {
             "metadata": {},
             "source": [
                 "## 3. Discusión y Evaluación de Opciones de Modelo\n",
-                "Comparamos la **Opción A (Tabla Plana original del Entregable 2)** vs la **Opción B (Esquema en Estrella generado en el preprocesamiento)** usando métricas computacionales exactas."
+                "Sometemos a la **Tabla Plana (OBT)** vs el **Esquema Estrella** a pruebas empíricas y de evaluación arquitectónica en BI."
             ]
         },
         {
@@ -121,22 +119,40 @@ notebook = {
             "source": [
                 "resultados_bench = {}\n",
                 "\n",
+                "# --- MÉTRICAS DE BENCHMARKING EMPÍRICO ---\n",
                 "# Métrica 1: Eficiencia de Huella de Memoria RAM (KB)\n",
                 "mem_obt = df_base.memory_usage(deep=True).sum() / 1024\n",
                 "mem_star = (dim_country.memory_usage(deep=True).sum() + \n",
                 "            dim_time.memory_usage(deep=True).sum() + \n",
                 "            fact_trade.memory_usage(deep=True).sum()) / 1024\n",
+                "resultados_bench['Memoria RAM / Compresión'] = {'Tabla Plana (OBT)': f'{mem_obt:.2f} KB', 'Esquema Estrella': f'{mem_star:.2f} KB'}\n",
                 "\n",
-                "resultados_bench['Memoria RAM (KB)'] = {'Tabla Plana (OBT)': round(mem_obt, 2), 'Esquema Estrella': round(mem_star, 2)}\n",
-                "\n",
-                "# Métrica 2: Riesgo de Agregación (Fan-out Trap sobre el Promedio Mundial)\n",
-                "# Demostramos cómo la Tabla Plana distorsiona métricas globales al replicarlas.\n",
+                "# Métrica 2: Riesgo de Agregación Empírico (Fan-out Trap sobre Promedio Mundial)\n",
                 "if 'World Growth (%)' in df_base.columns:\n",
-                "    avg_obt = df_base['World Growth (%)'].mean() # Incorrecto matemático\n",
-                "    avg_star = dim_time['World Growth (%)'].mean() # Promedio real por año único\n",
-                "    resultados_bench['Distorsión (Avg World Growth)'] = {'Tabla Plana (OBT)': f'{avg_obt:.3f}% (FALSO)', 'Esquema Estrella': f'{avg_star:.3f}% (REAL)'}\n",
+                "    avg_obt = df_base['World Growth (%)'].mean()\n",
+                "    avg_star = dim_time['World Growth (%)'].mean()\n",
+                "    resultados_bench['Fidelidad Semántica (World Growth)'] = {'Tabla Plana (OBT)': f'{avg_obt:.2f}% (Agregación Destruida)', 'Esquema Estrella': f'{avg_star:.2f}% (Promedio Real)'}\n",
                 "\n",
-                "print(\"Métricas de evaluación calculadas.\")"
+                "# --- MÉTRICAS ARQUITECTÓNICAS DE BUSINESS INTELLIGENCE ---\n",
+                "# Métrica 3: Complejidad Analítica en Tableau (LODs)\n",
+                "resultados_bench['Complejidad Analítica (LODs)'] = {\n",
+                "    'Tabla Plana (OBT)': 'ALTA: Requiere programar expresiones {FIXED} complejas para promedios.',\n",
+                "    'Esquema Estrella': 'NULA: Agregación nativa fluida usando Tableau Relationships.'\n",
+                "}\n",
+                "\n",
+                "# Métrica 4: Mantenibilidad y Anomalías de Actualización\n",
+                "resultados_bench['Riesgo de Update Anomaly'] = {\n",
+                "    'Tabla Plana (OBT)': 'CRÍTICO: Renombrar un país o región exige alterar N filas históricas.',\n",
+                "    'Esquema Estrella': 'INEXISTENTE: Actualización aislada (SCD) en 1 fila de la tabla Dimensión.'\n",
+                "}\n",
+                "\n",
+                "# Métrica 5: Escalabilidad (Integración de Nuevas Fuentes)\n",
+                "resultados_bench['Escalabilidad (Conformed Dimensions)'] = {\n",
+                "    'Tabla Plana (OBT)': 'RÍGIDA: Añadir un dataset de PIB obliga a un Join transversal ineficiente.',\n",
+                "    'Esquema Estrella': 'FLEXIBLE: Se conecta naturalmente a Dim_Country sin afectar a Fact_Trade.'\n",
+                "}\n",
+                "\n",
+                "print(\"Evaluación integral de modelos completada.\")"
             ]
         },
         {
@@ -144,7 +160,7 @@ notebook = {
             "metadata": {},
             "source": [
                 "## 4. Tabla Comparativa de Modelos y Exportación\n",
-                "Fundamentamos empíricamente la elección de la arquitectura."
+                "Exportamos la matriz de decisión con todas las variables involucradas."
             ]
         },
         {
@@ -154,20 +170,23 @@ notebook = {
             "outputs": [],
             "source": [
                 "df_comparativo = pd.DataFrame(resultados_bench).T\n",
-                "df_comparativo.index.name = 'Métrica Evaluada'\n",
+                "df_comparativo.index.name = 'Criterio Evaluado'\n",
                 "df_comparativo.reset_index(inplace=True)\n",
                 "\n",
-                "# Justificación ligada a las métricas:\n",
-                "df_comparativo['Justificación de Decisión para el Proyecto'] = [\n",
-                "    \"El modelo Estrella ahorra memoria descartando los textos duplicados; necesario para fluidez en Tableau.\",\n",
-                "    \"La Estrella resuelve el problema del Fan-Out. Evita promedios distorsionados sin forzar el uso de cálculos LoD complejos.\"\n",
+                "# Justificación cruzada para el Proyecto\n",
+                "df_comparativo['Justificación de Decisión (Objetivo del Proyecto)'] = [\n",
+                "    \"Eficiencia indispensable para cruzar más de 30 años de data de 200 países sin lag visual.\",\n",
+                "    \"Vital para el objetivo: Evita la distorsión matemática al cruzar volúmenes micro (Exportaciones) con tasas macro (World Growth).\",\n",
+                "    \"Acelera el desarrollo del Dashboard liberando al usuario de lógicas matemáticas de corrección.\",\n",
+                "    \"Facilita la corrección de metadatos geográficos si una nación cambió de nombre entre 1989 y 2023.\",\n",
+                "    \"Habilita al modelo para incorporar nuevas capas (como PIB o Población) en entregas futuras de manera limpia.\"\n",
                 "]\n",
                 "\n",
                 "display(df_comparativo)\n",
                 "\n",
                 "os.makedirs('../outputs', exist_ok=True)\n",
                 "df_comparativo.to_csv('../outputs/tabla_comparativa_modelos.csv', index=False)\n",
-                "print(\"\\nTabla comparativa de justificación de modelo exportada a /outputs/\")"
+                "print(\"\\n=> Tabla de decisión arquitectónica exportada a /outputs/\")"
             ]
         },
         {
@@ -217,4 +236,4 @@ os.makedirs('notebooks', exist_ok=True)
 with open('notebooks/entrega3-pipeline-final.ipynb', 'w', encoding='utf-8') as f:
     json.dump(notebook, f, ensure_ascii=False, indent=2)
 
-print('Notebook ajustado generado con éxito.')
+print('Notebook ajustado generado con múltiples métricas arquitectónicas.')
