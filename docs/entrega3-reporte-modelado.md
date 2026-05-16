@@ -4,16 +4,18 @@
 
 **Curso:** Data Visualization (1ACC0211) - UPC  
 **Tema:** Dinámica del comercio mundial: exportaciones e importaciones por país, categoría de producto y región geográfica (1989-2023)  
-**Notebook asociado:** [`../notebooks/entrega3-benchmarking-modelado.ipynb`](../notebooks/entrega3-benchmarking-modelado.ipynb)
+**Notebook asociado:** [`../notebooks/entrega3-preprocesamiento-modelado.ipynb`](../notebooks/entrega3-preprocesamiento-modelado.ipynb)
 
 ---
 
-## 1. Preprocesamiento Avanzado para el Modelo Dimensional
+## 1. Preprocesamiento Real sobre el Dataset
 
-Para asegurar que Tableau procese los datos con máximo rendimiento y sin errores de agregación, se aplicó un preprocesamiento orientado al **Modelado Dimensional (Metodología de Ralph Kimball)**. Los pasos, justificados técnicamente, son:
+Para asegurar que Tableau procese los datos con máximo rendimiento y sin errores de agregación, aplicamos un preprocesamiento orientado al **Modelado Dimensional (Metodología de Ralph Kimball)** sobre el *dataset* limpio de la Entrega 2. Los pasos fueron:
 
-1. **Resolución de Granularidad y Dependencias Funcionales:** Se verificó que el nivel de detalle (LOD) base del dataset es `Country-Year`. Se detectó que atributos como el crecimiento mundial (`World Growth`) dependían solo del año, mientras que los aranceles (`AHS`) dependían del cruce. Se separaron las variables para cumplir con la Segunda Forma Normal (2NF).
-2. **Generación de Surrogate Keys (Claves Subrogadas):** En lugar de realizar uniones (Joins) usando el nombre del país (`Partner Name`) en formato `String`, se generaron claves enteras (`dim_country_sk`, `dim_time_sk`). Las comparaciones de enteros en memoria son órdenes de magnitud más rápidas que las comparaciones de texto.
+1. **Filtrado de Entidades y Control de Calidad:** Se descartaron registros con `entity_status == 'Inactivo'` y se limpiaron valores nulos en las métricas core (`Export USD`).
+2. **Generación de Variables Derivadas:** Se creó la variable `Decade` (Década) agrupando la columna temporal para permitir segmentación transversal a largo plazo en Tableau.
+3. **Generación de Surrogate Keys (Claves Subrogadas):** En lugar de realizar uniones (Joins) usando el nombre del país (`Partner Name`) en formato `String`, se generaron claves enteras (`dim_country_sk`, `dim_time_sk`). Las comparaciones de enteros en memoria son órdenes de magnitud más rápidas.
+4. **Desagregación:** Se dividió la matriz unificada en dimensiones (geográfica y temporal) y una tabla central transaccional (Hechos).
 
 ---
 
@@ -22,8 +24,8 @@ Para asegurar que Tableau procese los datos con máximo rendimiento y sin errore
 Se plantearon tres arquitecturas analíticas para ser consumidas por Tableau. Cada una representa un *trade-off* entre rendimiento de consulta, integridad de datos y facilidad de uso.
 
 ### Opción A: Tabla Plana (One Big Table - OBT)
-*   **Definición:** Todas las jerarquías, dimensiones y hechos se desnormalizan en una sola matriz gigantesca.
-*   **Debilidad Crítica:** Falla en la integridad semántica. Genera un riesgo altísimo de **Fan-out trap** al duplicar métricas agregadas por cada país existente.
+*   **Definición:** Todas las jerarquías, dimensiones y hechos se desnormalizan en una sola matriz gigantesca (similar al output de la Entrega 2).
+*   **Debilidad Crítica:** Falla en la integridad semántica. Genera un riesgo altísimo de **Fan-out trap** al duplicar métricas agregadas globales por cada país existente en un año determinado.
 
 ### Opción B: Esquema Copo de Nieve (Snowflake Schema)
 *   **Definición:** Modelo altamente normalizado (Tercera Forma Normal - 3NF). 
@@ -37,14 +39,12 @@ Se plantearon tres arquitecturas analíticas para ser consumidas por Tableau. Ca
 
 ## 3. Pruebas de Estrés y Evidencia Computacional (Benchmarking)
 
-Para cumplir estrictamente con el criterio de *"selección de modelo justificado con evidencia y no solo preferencias técnicas"*, programamos un script de pruebas de estrés (Benchmarking) en Python simulando **1 Millón de transacciones**. Las pruebas arrojaron la siguiente **evidencia dura**:
+Para cumplir estrictamente con el criterio de *"selección de modelo justificado con evidencia"*, el código en Python ejecuta métricas de evaluación estructurales midiendo los beneficios en KB y la precisión estadística:
 
-| Prueba / Métrica Empírica | Resultado en OBT (Tabla Plana) | Resultado en Estrella (Star Schema) | Conclusión Basada en Evidencia |
+| Métrica Computacional (Evidencia Empírica) | Resultado en OBT (Tabla Plana) | Resultado en Estrella (Star Schema) | Conclusión Basada en Evidencia |
 | :--- | :--- | :--- | :--- |
-| **Evidencia A: Consumo de RAM (Sparsity)** | ~114 MB en memoria | ~22 MB en memoria | **La Estrella es 5x más eficiente.** Elimina la redundancia de strings, lo que asegura que Tableau cargue el Extracto de forma casi instantánea. |
-| **Evidencia B: Latencia de Exportación (I/O)** | 2.5 a 3.0 segundos | 0.4 a 0.6 segundos | **La Estrella reduce el tiempo de I/O en un 80%.** Los tiempos de recarga programados en Tableau Server serán marginales. |
-| **Evidencia C: Prueba de Fan-Out Trap** | Promedio de Crecimiento: 3.89% (Falso) | Promedio de Crecimiento: 3.01% (Real) | **La OBT corrompe la agregación nativa.** Este es el hallazgo más crítico: si usamos OBT, el Dashboard arrojará datos falsos a menos que se sobrecargue de cálculos LoD. |
-| **Evidencia D: Latencia de Actualización** | ~0.0150 segundos (Afecta N filas) | ~0.0009 segundos (Afecta 1 fila) | **La Estrella es 15x más rápida al mutar datos.** Si hay correcciones históricas, el impacto computacional es nulo. |
+| **Consumo de Memoria RAM (Sparsity)** | Muy ineficiente (repite *strings*) | Eficiente (Surrogate Keys) | **La Estrella ahorra RAM drásticamente.** Eliminar la redundancia textual disminuye el peso, lo que asegura que Tableau cargue el Extracto más rápido. |
+| **Prueba de Fan-Out Trap (Fidelidad Semántica)** | Distorsiona el `World Growth (%)` | Mantiene el Promedio Real | **La OBT corrompe la agregación nativa.** Este es el hallazgo más crítico: si usamos la OBT original, el Dashboard arrojará promedios macroeconómicos falsos. |
 
 ---
 
@@ -53,6 +53,6 @@ Para cumplir estrictamente con el criterio de *"selección de modelo justificado
 **Modelo Seleccionado:** **Esquema en Estrella (Star Schema) implementado en la Capa Lógica (Relationships) de Tableau.**
 
 **Justificación basada en evidencia:**
-Como demuestran matemáticamente las 4 pruebas de estrés (Evidencias A, B, C y D), el Esquema en Estrella no es solo una "buena práctica teórica", sino una necesidad computacional y aritmética para este proyecto.
+Como se demuestra matemáticamente en las pruebas del notebook, el Esquema en Estrella no es solo una "buena práctica teórica", sino una necesidad computacional y aritmética para el proyecto.
 
-Se rechaza definitivamente la Tabla Plana porque la prueba **Evidencia C** demuestra que corrompe la precisión de las métricas macroeconómicas (el Fan-Out Trap distorsiona la media real). Para la "Dinámica del comercio mundial", donde comparamos constantemente tasas globales con sumatorias locales, la integridad matemática que provee la Estrella (junto con su reducción de peso en disco demostrada en la **Evidencia A**) es la única arquitectura viable para desplegar un Dashboard profesional sin retrasos de renderizado.
+Se rechaza definitivamente la Tabla Plana porque la prueba del **Fan-Out Trap** demuestra empíricamente que corrompe la precisión de las métricas macroeconómicas al duplicarlas. Para la "Dinámica del comercio mundial", donde compararemos constantemente tasas globales de crecimiento con sumatorias de volumen local, la integridad matemática que provee la Estrella (junto con su probada compresión de memoria) es la única arquitectura viable para desplegar un Dashboard profesional.
