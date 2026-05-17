@@ -321,22 +321,83 @@ Peso sugerido:
 
 - `10%`
 
-### Entrega 3. Análisis exploratorio y selección de gráficos
+### Entrega 3. Modelo, métricas y preprocesamiento
 
 Semana sugerida: `7`
 
 Contenido:
 
-- primeras visualizaciones exploratorias
-- comparación, distribución, relación y tendencia
-- tabla de decisiones de gráficos
-- primeros insights
+- preprocesamiento necesario para llegar al modelo
+- discusión de diferentes opciones de modelo
+- definición del modelo seleccionado
+- métricas de evaluación y criterios de comparación
 
 Entregables:
 
-- notebook exploratorio
+- notebook de preprocesamiento y modelado
+- tabla comparativa de opciones de modelo
+- reporte breve de métricas y decisión del modelo
+
+Criterios mínimos de aprobación:
+
+- el preprocesamiento es reproducible y está documentado paso a paso
+- se comparan al menos `2` opciones de modelo, incluyendo una alternativa base
+- las métricas elegidas son coherentes con el tipo de problema analítico
+- la selección del modelo se justifica con evidencia y no solo por preferencia técnica
+- la entrega no incluye dashboard ni visualización exploratoria como componente principal
+
+Peso sugerido:
+
+- `5%`
+
+### Entrega 4. Segmentación, cálculos analíticos y fuentes para Tableau
+
+Semana sugerida: `11`
+
+Contenido:
+
+- estructura analítica o relacional para Tableau
+- métricas derivadas para visualización
+- segmentación
+- parámetros o lógica analítica
+- fuentes finales o semidefinitivas para Tableau
+
+Entregables:
+
+- notebook de cálculos analíticos
+- fuentes finales o semidefinitivas para Tableau
+- documento breve de reglas de métricas, segmentos y parámetros
+
+Criterios mínimos de aprobación:
+
+- la estructura relacional está validada y no duplica métricas sin control
+- se implementan métricas derivadas consistentes con la pregunta del proyecto
+- se define al menos un segmento relevante para el análisis posterior en Tableau
+- el equipo puede explicar cómo cada cálculo afecta la interpretación
+- las fuentes exportadas pueden conectarse a Tableau sin reprocesamiento manual
+
+Peso sugerido:
+
+- `10%`
+
+### Entrega 5. Dashboard alpha y visualización exploratoria
+
+Semana sugerida: `13`
+
+Contenido:
+
+- primeras visualizaciones exploratorias en Tableau
+- comparación, distribución, relación y tendencia
+- tabla de decisiones de gráficos
+- primeros insights visuales
+- construcción del dashboard alpha
+
+Entregables:
+
 - workbook preliminar en Tableau
-- documento corto con `3` a `5` insights
+- dashboard alpha
+- documento corto con `3` a `5` insights exploratorios
+- tabla de selección y descarte de gráficos
 
 Criterios mínimos de aprobación:
 
@@ -344,67 +405,7 @@ Criterios mínimos de aprobación:
 - cada gráfico tiene una justificación técnica breve
 - al menos `2` gráficos preliminares son descartados y se explica por qué
 - los insights están redactados en lenguaje analítico, no solo descriptivo
-- el workbook preliminar ya tiene una estructura navegable
-
-Peso sugerido:
-
-- `5%`
-
-### Entrega 4. Modelado, métricas y dashboard alpha
-
-Semana sugerida: `11`
-
-Contenido:
-
-- estructura analítica o relacional
-- métricas derivadas
-- segmentación
-- parámetros o lógica analítica
-- primera versión de dashboard funcional
-
-Entregables:
-
-- notebook de modelado y cálculos
-- fuentes finales o semidefinitivas para Tableau
-- dashboard alpha
-
-Criterios mínimos de aprobación:
-
-- la estructura relacional está validada y no duplica métricas sin control
-- se implementan métricas derivadas consistentes con la pregunta del proyecto
-- el dashboard alpha ya tiene flujo de lectura y filtros con sentido
-- existe al menos una vista por segmento relevante
-- el equipo puede explicar cómo cada cálculo afecta la interpretación
-
-Peso sugerido:
-
-- `10%`
-
-### Entrega 5. Storytelling, accesibilidad y módulo temporal/comparativo
-
-Semana sugerida: `13`
-
-Contenido:
-
-- rediseño de dashboard con foco narrativo
-- mejora de accesibilidad
-- vista longitudinal sólida
-- vista transversal sólida
-
-Entregables:
-
-- dashboard revisado
-- historia visual breve
-- checklist de accesibilidad
-- mini reflexión metodológica
-
-Criterios mínimos de aprobación:
-
-- el dashboard mejora respecto al alpha en jerarquía visual y legibilidad
-- se valida contraste, uso de color, etiquetas y títulos analíticos
-- se incluye una vista longitudinal y una transversal claramente defendibles
-- la historia visual no repite gráficos sin aportar mensaje
-- la reflexión metodológica reconoce límites y decisiones de diseño
+- el dashboard alpha ya tiene estructura navegable, filtros con sentido y flujo de lectura inicial
 
 Peso sugerido:
 
@@ -419,6 +420,8 @@ Contenido:
 - aplicación de `PCA`, `t-SNE` o alternativa aprobada
 - integración del resultado al análisis
 - documentación metodológica de la técnica
+- ajuste final de storytelling, accesibilidad y diseño visual
+- vista longitudinal y vista transversal finales
 - versión beta final del dashboard
 - dashboard final
 - historia visual o secuencia de presentación
@@ -438,6 +441,8 @@ Criterios mínimos de aprobación:
 - el dashboard final responde la pregunta principal sin depender de explicación externa extensa
 - el pipeline técnico es reproducible y entendible
 - el equipo evidencia cobertura de todo el curso
+- se valida contraste, uso de color, etiquetas y títulos analíticos
+- se incluye una vista longitudinal y una transversal claramente defendibles
 - la defensa muestra control de supuestos, límites y decisiones
 - el producto final puede presentarse como pieza publicable o demo funcional
 
@@ -468,23 +473,23 @@ Este diseño de trabajo final integra explícitamente todo lo visto en el curso:
 
 ## Matriz de cobertura de contenidos por entrega
 
-| Tema del curso | E1 | E2 | E3 | E4 | E5 | E6 | E7 |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| Definición del problema | X |  |  |  |  |  | X |
-| Selección y validación del dataset | X | X |  |  |  |  | X |
-| Perfilado y granularidad |  | X |  |  |  |  | X |
-| Limpieza y preparación |  | X | X | X |  |  | X |
-| Modelado analítico |  |  |  | X |  |  | X |
-| Exploración y chart selection |  |  | X | X |  |  | X |
-| Segmentación e insights |  |  | X | X | X |  | X |
-| Cálculos analíticos |  |  |  | X | X |  | X |
-| Storytelling técnico |  |  |  | X | X |  | X |
-| Accesibilidad y diseño |  |  |  |  | X |  | X |
-| Visualización temporal |  |  | X | X | X |  | X |
-| Visualización transversal |  |  | X | X | X | X | X |
-| Componente avanzado |  |  |  |  |  | X | X |
-| Dashboard engineering |  |  |  | X | X | X | X |
-| Defensa metodológica |  |  |  |  |  |  | X |
+| Tema del curso | E1 | E2 | E3 | E4 | E5 | E6 |
+|---|---:|---:|---:|---:|---:|---:|
+| Definición del problema | X |  |  |  |  | X |
+| Selección y validación del dataset | X | X |  |  |  | X |
+| Perfilado y granularidad |  | X |  |  |  | X |
+| Limpieza y preparación |  | X | X |  |  | X |
+| Modelado analítico |  |  | X | X |  | X |
+| Exploración y chart selection |  |  |  |  | X | X |
+| Segmentación e insights |  |  |  | X | X | X |
+| Cálculos analíticos |  |  | X | X |  | X |
+| Storytelling técnico |  |  |  |  |  | X |
+| Accesibilidad y diseño |  |  |  |  |  | X |
+| Visualización temporal |  |  |  |  | X | X |
+| Visualización transversal |  |  |  |  | X | X |
+| Componente avanzado |  |  |  |  |  | X |
+| Dashboard engineering |  |  |  |  | X | X |
+| Defensa metodológica |  |  |  |  |  | X |
 
 ## Recomendación sobre herramientas
 
@@ -535,11 +540,10 @@ Para mantener alineación entre teoría, laboratorio y proyecto, se recomienda m
 
 - Entrega `1`: [notebooks/semana-01-introduccion-tableau.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-01-introduccion-tableau.ipynb) y [notebooks/semana-02-perfilado-granularidad.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-02-perfilado-granularidad.ipynb)
 - Entrega `2`: [notebooks/semana-03-limpieza-datos.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-03-limpieza-datos.ipynb) y [notebooks/semana-04-modelado-fuentes.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-04-modelado-fuentes.ipynb)
-- Entrega `3`: [notebooks/semana-05-chart-selection.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-05-chart-selection.ipynb) y [notebooks/semana-06-segmentacion-insights.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-06-segmentacion-insights.ipynb)
-- Entrega `4`: [notebooks/semana-07-calculos-lod-analogos.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-07-calculos-lod-analogos.ipynb) y [notebooks/semana-08-storytelling-anotacion.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-08-storytelling-anotacion.ipynb)
-- Entrega `5`: [notebooks/semana-09-accesibilidad-diseno.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-09-accesibilidad-diseno.ipynb), [notebooks/semana-10-series-temporales.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-10-series-temporales.ipynb) y [notebooks/semana-11-comparacion-transversal-mapas.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-11-comparacion-transversal-mapas.ipynb)
-- Entrega `6`: [notebooks/semana-12-pca-tsne.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-12-pca-tsne.ipynb)
-- Entrega `7`: [notebooks/semana-13-dashboard-engineering.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-13-dashboard-engineering.ipynb) y [notebooks/semana-14-capstone-qa.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-14-capstone-qa.ipynb)
+- Entrega `3`: [notebooks/semana-04-modelado-fuentes.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-04-modelado-fuentes.ipynb) y [notebooks/semana-07-calculos-lod-analogos.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-07-calculos-lod-analogos.ipynb)
+- Entrega `4`: [notebooks/semana-06-segmentacion-insights.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-06-segmentacion-insights.ipynb) y [notebooks/semana-07-calculos-lod-analogos.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-07-calculos-lod-analogos.ipynb)
+- Entrega `5`: [notebooks/semana-05-chart-selection.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-05-chart-selection.ipynb) y [notebooks/semana-13-dashboard-engineering.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-13-dashboard-engineering.ipynb)
+- Entrega `6`: [notebooks/semana-08-storytelling-anotacion.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-08-storytelling-anotacion.ipynb), [notebooks/semana-09-accesibilidad-diseno.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-09-accesibilidad-diseno.ipynb), [notebooks/semana-10-series-temporales.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-10-series-temporales.ipynb), [notebooks/semana-11-comparacion-transversal-mapas.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-11-comparacion-transversal-mapas.ipynb), [notebooks/semana-12-pca-tsne.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-12-pca-tsne.ipynb) y [notebooks/semana-14-capstone-qa.ipynb](/Users/adrianalarcon/upc/master/computer_science/data-visualization/notebooks/semana-14-capstone-qa.ipynb)
 
 ## Variantes temáticas sugeridas
 
