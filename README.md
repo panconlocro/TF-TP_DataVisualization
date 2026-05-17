@@ -131,8 +131,8 @@ Produce las 8 visualizaciones exploratorias (V01–V08) con justificación técn
 **Esquema en Estrella** — tres tablas conectadas en Tableau mediante *Relationships*:
 
 ```
-Fact_Trade ──► Dim_Country   (252 países con región geográfica)
-           ──► Dim_Time      (34 años con World Growth %)
+Fact_Trade ──► Dim_Country   (252 países — surrogate key int64)
+           ──► Dim_Time      (34 años + World Growth % — surrogate key int64)
 ```
 
 La justificación empírica completa está en `docs/entrega3-reporte-modelado.md` y en la Sección 6 del notebook principal.
