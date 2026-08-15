@@ -3,7 +3,8 @@
 ## Proyecto
 
 **Curso:** Data Visualization (1ACC0211) — UPC  
-**Tema:** Dinámica del comercio mundial: exportaciones e importaciones por país, categoría de producto y región geográfica (1988-2021)  
+**Nombre del proyecto:** GlobalTradeAnalysis  
+**Tema:** Dinámica del comercio mundial: exportaciones e importaciones por país, categoría de producto y región geográfica (1989-2023)  
 
 | Código | Nombre |
 |---|---|

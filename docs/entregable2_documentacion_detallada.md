@@ -3,6 +3,7 @@
 ## Proyecto
 
 **Curso:** Data Visualization (1ACC0211) - UPC  
+**Nombre del proyecto:** GlobalTradeAnalysis  
 **Tema:** dinamica del comercio mundial: exportaciones e importaciones por pais, categoria de producto y region geografica (1989-2023)  
 **Notebook principal:** [Entregable2_Perfilado_Limpieza_Consolidado.ipynb](../code/notebooks/Entregable2_Perfilado_Limpieza_Consolidado.ipynb)
 

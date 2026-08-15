@@ -8,9 +8,9 @@ Enfoque recomendado del curso:
 - Soporte técnico y analítico: `Python` con notebooks
 - Enfoque metodológico: perfilado, limpieza, modelado, análisis exploratorio, diseño visual, storytelling, accesibilidad, dashboards e integración de una técnica avanzada
 
-## Nombre sugerido del trabajo final
+## Nombre del proyecto
 
-**Proyecto Integrador de Visualización de Datos para la Toma de Decisiones**
+**GlobalTradeAnalysis**
 
 ## Idea central del trabajo final
 
