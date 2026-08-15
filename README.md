@@ -1,8 +1,10 @@
-# Dinámica del Comercio Mundial (1989–2023)
+# GlobalTradeAnalysis
+
+Análisis de la dinámica del comercio mundial (1989–2023): exportaciones e importaciones por país y región geográfica.
 
 **Curso:** Data Visualization (1ACC0211) — Universidad Peruana de Ciencias Aplicadas
 
-**Proyecto:** Análisis de la dinámica del comercio mundial: exportaciones e importaciones por país y región geográfica.
+**Proyecto:** GlobalTradeAnalysis — análisis de la dinámica del comercio mundial: exportaciones e importaciones por país y región geográfica.
 
 | Código | Nombre |
 |---|---|
